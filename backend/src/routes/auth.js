@@ -1,7 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
-
+const User = require('../models/User');
 // Step 1: redirect user to GitHub's authorize page
 router.get('/github', (req, res) => {
   const redirectUri = process.env.GITHUB_CALLBACK_URL;
@@ -35,7 +35,20 @@ router.get('/github/callback', async (req, res) => {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
 
-    console.log(userResponse.data); // just log for now — Mongo save comes next
+    const ghUser = userResponse.data;
+
+const user = await User.findOneAndUpdate(
+  { githubId: ghUser.id },
+  {
+    githubId: ghUser.id,
+    username: ghUser.login,
+    accessToken: accessToken,
+    email: ghUser.email
+  },
+  { upsert: true, new: true }
+);
+
+console.log('User saved:', user);
 
     res.send('OAuth flow worked! Check your backend logs.');
   } catch (err) {
