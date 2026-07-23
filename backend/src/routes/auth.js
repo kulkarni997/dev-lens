@@ -45,7 +45,7 @@ const user = await User.findOneAndUpdate(
     accessToken: accessToken,
     email: ghUser.email
   },
-  { upsert: true, new: true }
+  { upsert: true, returnDocument: 'after' }
 );
 
 console.log('User saved:', user);
