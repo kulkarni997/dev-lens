@@ -13,7 +13,7 @@ function verifySignature(req) {
   return signature === expectedSignature;
 }
 
-router.post('/github', (req, res) => {
+router.post('/github', async (req, res) => {
   if (!verifySignature(req)) {
     console.log('Signature mismatch — rejecting');
     return res.status(401).send('Invalid signature');
