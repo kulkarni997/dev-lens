@@ -18,8 +18,19 @@ router.post('/github', (req, res) => {
     return res.status(401).send('Invalid signature');
   }
 
-  console.log('Webhook received:', req.body);
-  console.log('Event type:', req.headers['x-github-event']);
+  const eventType = req.headers['x-github-event'];
+
+  if (eventType === 'pull_request') {
+    const action = req.body.action;
+    const prNumber = req.body.number;
+    const prTitle = req.body.pull_request.title;
+    const [owner, repo] = req.body.repository.full_name.split('/');
+
+    console.log('PR event:', action);
+    console.log('PR number:', prNumber);
+    console.log('PR title:', prTitle);
+    console.log('Owner:', owner, '| Repo:', repo);
+  }
 
   res.status(200).send('Received');
 });
