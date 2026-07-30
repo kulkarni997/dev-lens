@@ -1,5 +1,6 @@
 const express = require('express');
 const crypto = require('crypto');
+const User = require('../models/User');
 const router = express.Router();
 
 function verifySignature(req) {
@@ -30,6 +31,14 @@ router.post('/github', (req, res) => {
     console.log('PR number:', prNumber);
     console.log('PR title:', prTitle);
     console.log('Owner:', owner, '| Repo:', repo);
+
+     const user = await User.findOne({ username: owner });
+    if (!user) {
+      console.log('No matching user found for', owner);
+      return res.status(200).send('No matching user');
+    }
+
+    console.log('Found user, access token available');
   }
 
   res.status(200).send('Received');
