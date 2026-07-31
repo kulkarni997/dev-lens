@@ -33,27 +33,27 @@ router.post('/github', async (req, res) => {
     console.log('PR title:', prTitle);
     console.log('Owner:', owner, '| Repo:', repo);
 
-     const user = await User.findOne({ username: owner });
+    const user = await User.findOne({ username: owner });
     if (!user) {
       console.log('No matching user found for', owner);
       return res.status(200).send('No matching user');
     }
 
     console.log('Found user, access token available');
-  }
 
-  const diffResponse = await axios.get(
-  `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
-  {
-    headers: {
-      Authorization: `Bearer ${user.accessToken}`,
-      Accept: 'application/vnd.github.v3.diff'
-    }
-  }
-);
+    const diffResponse = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
+      {
+        headers: {
+          Authorization: `Bearer ${user.accessToken}`,
+          Accept: 'application/vnd.github.v3.diff'
+        }
+      }
+    );
 
-const diffText = diffResponse.data;
-console.log('Diff fetched, length:', diffText.length);
+    const diffText = diffResponse.data;
+    console.log('Diff fetched, length:', diffText.length);
+  }
 
   res.status(200).send('Received');
 });
