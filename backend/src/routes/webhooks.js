@@ -2,6 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const User = require('../models/User');
 const router = express.Router();
+const axios = require('axios');
 
 function verifySignature(req) {
   const signature = req.headers['x-hub-signature-256'];
@@ -40,6 +41,19 @@ router.post('/github', async (req, res) => {
 
     console.log('Found user, access token available');
   }
+
+  const diffResponse = await axios.get(
+  `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
+  {
+    headers: {
+      Authorization: `Bearer ${user.accessToken}`,
+      Accept: 'application/vnd.github.v3.diff'
+    }
+  }
+);
+
+const diffText = diffResponse.data;
+console.log('Diff fetched, length:', diffText.length);
 
   res.status(200).send('Received');
 });
