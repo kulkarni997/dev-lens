@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const axios = require('axios');
 
 // One client instance, reused across requests instead of creating a new
 // connection every time someone opens a PR.
@@ -36,4 +37,24 @@ ${diffText}`;
   return response.text();
 }
 
-module.exports = { getReview };
+/**
+ * Posts the review text as a comment on the PR.
+ * Note: PRs are internally "issues" in GitHub's API, so comments
+ * live under /issues/{prNumber}/comments, not /pulls/.
+ */
+async function postReviewComment({ owner, repo, prNumber, accessToken, review }) {
+  const url = `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`;
+
+  await axios.post(
+    url,
+    { body: review },
+    {
+      headers: {
+        Authorization: `token ${accessToken}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
+    }
+  );
+}
+
+module.exports = { getReview, postReviewComment };

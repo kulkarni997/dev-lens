@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const router = express.Router();
 const axios = require('axios');
-const { getReview } = require('../services/aiReview');
+const { getReview, postReviewComment } = require('../services/aiReview');
 
 function verifySignature(req) {
   const signature = req.headers['x-hub-signature-256'];
@@ -57,6 +57,14 @@ router.post('/github', async (req, res) => {
 
     const review = await getReview(diffText);
     console.log('AI Review:', review);
+
+    await postReviewComment({
+  owner,
+  repo,
+  prNumber,
+  accessToken: user.accessToken,
+  review,
+});
   }
 
   res.status(200).send('Received');
