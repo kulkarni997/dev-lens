@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const router = express.Router();
 const axios = require('axios');
-const { getReview, postReviewComment } = require('../services/aiReview');
+const { reviewQueue } = require('../queues/reviewQueue');
 
 function verifySignature(req) {
   const signature = req.headers['x-hub-signature-256'];
@@ -52,19 +52,14 @@ router.post('/github', async (req, res) => {
       }
     );
 
-    const diffText = diffResponse.data;
-    console.log('Diff fetched, length:', diffText.length);
-
-    const review = await getReview(diffText);
-    console.log('AI Review:', review);
-
-    await postReviewComment({
+    await reviewQueue.add('review-pr', {
   owner,
   repo,
   prNumber,
   accessToken: user.accessToken,
-  review,
 });
+
+console.log('Job enqueued for PR', prNumber);
   }
 
   res.status(200).send('Received');
