@@ -25,6 +25,8 @@ app.get('/', (req, res) => {
   res.send('DevLens backend is alive');
 });
 
+require('./workers/reviewWorker');
+
 app.listen(5000, () => {
   console.log('Backend running on port 5000');
 });

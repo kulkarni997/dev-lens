@@ -17,6 +17,7 @@
     "bullmq": "^6.0.5",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "ioredis": "^5.11.1",
     "mongoose": "^9.8.0"
   }
 }
