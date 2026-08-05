@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
 const repoRoutes = require('./routes/repos');
 const webhookRoutes = require('./routes/webhooks');
+const reviewRoutes = require('./routes/reviews');
 
 const app = express();
 
@@ -20,6 +21,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/auth', authRoutes);
 app.use('/repos', repoRoutes);
 app.use('/webhooks', webhookRoutes);
+app.use('/reviews', reviewRoutes);
 
 app.get('/', (req, res) => {
   res.send('DevLens backend is alive');
