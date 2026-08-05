@@ -52,11 +52,13 @@ router.post('/github', async (req, res) => {
       }
     );
 
-    await reviewQueue.add('review-pr', {
+await reviewQueue.add('review-pr', {
   owner,
   repo,
   prNumber,
+  prTitle,
   accessToken: user.accessToken,
+  userId: user._id,
 });
 
 console.log('Job enqueued for PR', prNumber);
