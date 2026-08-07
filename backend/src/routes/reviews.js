@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const Review = require('../models/Review');
+const requireAuth = require('../middleware/requireAuth');
 
-router.get('/:userId', async (req, res) => {
+// GET /reviews — no more :userId in the URL, it comes from the verified token
+router.get('/', requireAuth, async (req, res) => {
   try {
-    const reviews = await Review.find({ user: req.params.userId })
-      .sort({ createdAt: -1 }); // newest first
+    const reviews = await Review.find({ user: req.userId })
+      .sort({ createdAt: -1 });
 
     res.json(reviews);
   } catch (err) {

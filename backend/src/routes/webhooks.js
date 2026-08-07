@@ -23,8 +23,8 @@ router.post('/github', async (req, res) => {
 
   const eventType = req.headers['x-github-event'];
 
-  if (eventType === 'pull_request') {
-    const action = req.body.action;
+ if (eventType === 'pull_request' && (action === 'opened' || action === 'synchronize')) {
+      const action = req.body.action;
     const prNumber = req.body.number;
     const prTitle = req.body.pull_request.title;
     const [owner, repo] = req.body.repository.full_name.split('/');
@@ -62,7 +62,7 @@ await reviewQueue.add('review-pr', {
 });
 
 console.log('Job enqueued for PR', prNumber);
-  }
+}
 
   res.status(200).send('Received');
 });
