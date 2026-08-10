@@ -4,6 +4,8 @@ const User = require('../models/User');
 const Repo = require('../models/Repo');
 const requireAuth = require('../middleware/requireAuth');
 const router = express.Router();
+const { validate } = require('../middleware/validate');
+const { connectRepoSchema } = require('../schemas/repoSchemas');
 
 // GET /repos — list the logged-in user's GitHub repos (for dashboard)
 router.get('/', requireAuth, async (req, res) => {
@@ -23,7 +25,8 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // :userId removed from the URL — req.userId now comes from the verified JWT
-router.post('/:owner/:repo/hooks', requireAuth, async (req, res) => {
+router.post('/:owner/:repo/hooks', requireAuth, validate(connectRepoSchema), async (req, res) => {
+  const { owner, repo } = req.validated.params;
   try {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).send('User not found');

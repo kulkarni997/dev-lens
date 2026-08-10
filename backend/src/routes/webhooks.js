@@ -4,6 +4,8 @@ const User = require('../models/User');
 const router = express.Router();
 const axios = require('axios');
 const { reviewQueue } = require('../queues/reviewQueue');
+const { validate } = require('../middleware/validate');
+const { pullRequestWebhookSchema } = require('../schemas/webhookSchemas');
 
 function verifySignature(req) {
   const signature = req.headers['x-hub-signature-256'];
@@ -15,7 +17,8 @@ function verifySignature(req) {
   return signature === expectedSignature;
 }
 
-router.post('/github', async (req, res) => {
+router.post('/github', verifySignature, validate(pullRequestWebhookSchema), (req, res) => {
+  const { action, pull_request, repository } = req.validated.body;
   if (!verifySignature(req)) {
     console.log('Signature mismatch — rejecting');
     return res.status(401).send('Invalid signature');
