@@ -10,16 +10,18 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  * The provider is chosen by AI_PROVIDER in .env, so webhooks.js never
  * needs to know or care which AI is actually doing the work.
  */
+const { withRetry } = require('../utils/retry');
+
 async function getReview(diffText) {
-  const provider = process.env.AI_PROVIDER || 'gemini';
-
-  if (provider === 'gemini') {
-    return getGeminiReview(diffText);
-  }
-
-  // Future: else if (provider === 'claude') { return getClaudeReview(diffText); }
-
-  throw new Error(`Unsupported AI_PROVIDER: ${provider}`);
+  return withRetry(
+    () => callGeminiApi(diffText), // ← your existing Gemini call, unchanged
+    {
+      retries: 3,
+      baseDelayMs: 1500,
+      onRetry: (err, attempt, delay) =>
+        console.warn(`Gemini call failed (attempt ${attempt}), retrying in ${Math.round(delay)}ms: ${err.message}`),
+    }
+  );
 }
 
 async function getGeminiReview(diffText) {
