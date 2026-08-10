@@ -3,7 +3,7 @@ const axios = require('axios');
 const { connection } = require('../queues/reviewQueue');
 const { getReview, postReviewComment } = require('../services/aiReview');
 const Review = require('../models/Review');
-
+const { tryConsumeGeminiCall } = require('../services/usageLimiter');
 const reviewWorker = new Worker(
   'pr-review',
   async (job) => {
@@ -23,6 +23,24 @@ const reviewWorker = new Worker(
     );
     const diffText = diffResponse.data;
     console.log('Diff fetched, length:', diffText.length);
+
+    const usage = await tryConsumeGeminiCall();
+if (!usage.allowed) {
+  console.warn(`Gemini daily limit reached (${usage.count}/${usage.limit}), skipping PR #${prNumber}`);
+  await Review.create({
+    user: userId,
+    owner,
+    repo,
+    prNumber,
+    prTitle,
+    reviewText: null,
+    aiProvider: 'gemini',
+    status: 'failed',
+    // optional — see note below
+    failureReason: 'daily_limit_reached',
+  });
+  return; // don't call Gemini, don't try to post a comment
+}
 
     // Step 2: send to Gemini
     const review = await getReview(diffText);
