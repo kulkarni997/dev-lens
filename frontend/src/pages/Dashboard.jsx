@@ -58,6 +58,12 @@ export default function Dashboard() {
           <p className="mt-2 text-sm text-[#8B93A7]">
             Sign in with GitHub to see your connected repos and review history.
           </p>
+          <a
+            href="/login"
+            className="mt-4 inline-block rounded border border-[#A78BFA]/40 px-4 py-2 font-mono text-xs text-[#A78BFA] transition hover:bg-[#A78BFA]/10"
+          >
+            sign in
+          </a>
         </div>
       </div>
     );
