@@ -5,6 +5,7 @@ const authRoutes = require('./routes/auth');
 const repoRoutes = require('./routes/repos');
 const webhookRoutes = require('./routes/webhooks');
 const reviewRoutes = require('./routes/reviews');
+const { apiLimiter, authLimiter } = require('./middleware/rateLimiters');
 
 const app = express();
 
@@ -18,10 +19,10 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-app.use('/auth', authRoutes);
-app.use('/repos', repoRoutes);
+app.use('/auth', authLimiter, authRoutes);
+app.use('/repos', apiLimiter, reposRoutes);
+app.use('/reviews', apiLimiter, reviewsRoutes);
 app.use('/webhooks', webhookRoutes);
-app.use('/reviews', reviewRoutes);
 
 app.get('/', (req, res) => {
   res.send('DevLens backend is alive');
