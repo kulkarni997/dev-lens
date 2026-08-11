@@ -14,7 +14,7 @@ const { withRetry } = require('../utils/retry');
 
 async function getReview(diffText) {
   return withRetry(
-    () => callGeminiApi(diffText), // ← your existing Gemini call, unchanged
+    () => getGeminiReview(diffText),
     {
       retries: 3,
       baseDelayMs: 1500,
