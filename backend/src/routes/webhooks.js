@@ -17,20 +17,23 @@ function verifySignature(req) {
   return signature === expectedSignature;
 }
 
-router.post('/github', verifySignature, validate(pullRequestWebhookSchema), (req, res) => {
-  const { action, pull_request, repository } = req.validated.body;
+function verifySignatureMiddleware(req, res, next) {
   if (!verifySignature(req)) {
     console.log('Signature mismatch — rejecting');
     return res.status(401).send('Invalid signature');
   }
+  next();
+}
 
+router.post('/github', verifySignatureMiddleware, validate(pullRequestWebhookSchema), async (req, res) => {
+  const { action, pull_request, repository } = req.validated.body;
   const eventType = req.headers['x-github-event'];
 
- if (eventType === 'pull_request' && (action === 'opened' || action === 'synchronize')) {
-      const action = req.body.action;
-    const prNumber = req.body.number;
-    const prTitle = req.body.pull_request.title;
-    const [owner, repo] = req.body.repository.full_name.split('/');
+  if (eventType === 'pull_request' && (action === 'opened' || action === 'synchronize')) {
+    const prNumber = pull_request.number;
+    const prTitle = pull_request.title;
+    const owner = repository.owner.login;
+    const repo = repository.name;
 
     console.log('PR event:', action);
     console.log('PR number:', prNumber);
@@ -55,17 +58,17 @@ router.post('/github', verifySignature, validate(pullRequestWebhookSchema), (req
       }
     );
 
-await reviewQueue.add('review-pr', {
-  owner,
-  repo,
-  prNumber,
-  prTitle,
-  accessToken: user.accessToken,
-  userId: user._id,
-});
+    await reviewQueue.add('review-pr', {
+      owner,
+      repo,
+      prNumber,
+      prTitle,
+      accessToken: user.accessToken,
+      userId: user._id,
+    });
 
-console.log('Job enqueued for PR', prNumber);
-}
+    console.log('Job enqueued for PR', prNumber);
+  }
 
   res.status(200).send('Received');
 });
