@@ -15,7 +15,7 @@ function timeAgo(dateStr) {
   return `${days}d ago`;
 }
 
-export default function ReviewHistory({ reviews }) {
+export default function ReviewHistory({ reviews , onReviewClick }) {
   if (reviews.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-white/[0.1] px-6 py-10 text-center text-sm leading-6 text-[#71717a]">
@@ -29,9 +29,10 @@ export default function ReviewHistory({ reviews }) {
     <ul className="divide-y divide-white/[0.07]">
       {reviews.map((review) => (
         <li
-          key={review._id}
-          className="group flex items-center gap-4 py-5"
-        >
+  key={review._id}
+  onClick={() => onReviewClick?.(review)}
+  className="group flex cursor-pointer items-center gap-4 py-5 transition-colors hover:bg-white/[0.02]"
+>
           <span className="shrink-0 font-mono text-xs text-[#52525b]">
             #{review.prNumber}
           </span>

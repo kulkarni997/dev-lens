@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import StatCard from '../components/StatCard';
 import RepoList from '../components/RepoList';
 import ReviewHistory from '../components/ReviewHistory';
+import ReviewDetail from '../components/ReviewDetail';
 
 const STAR_COLORS = [
   '#ffffff',
@@ -13,6 +14,70 @@ const STAR_COLORS = [
   '#93c5fd',
   '#f9a8d4',
 ];
+
+function TypewriterText() {
+  const lines = [
+    'Your code.',
+    'Reviewed automatically.',
+  ];
+
+  const [lineIndex, setLineIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+  const [selectedReview, setSelectedReview] = useState(null);
+
+  const currentLine = lines[lineIndex];
+
+  useEffect(() => {
+    const typingSpeed = deleting ? 45 : 90;
+
+    const timer = setTimeout(() => {
+      if (!deleting) {
+        if (charIndex < currentLine.length) {
+          setCharIndex((prev) => prev + 1);
+        } else {
+          setTimeout(() => setDeleting(true), 1400);
+        }
+      } else {
+        if (charIndex > 0) {
+          setCharIndex((prev) => prev - 1);
+        } else {
+          setDeleting(false);
+          setLineIndex((prev) => (prev + 1) % lines.length);
+        }
+      }
+    }, typingSpeed);
+
+    return () => clearTimeout(timer);
+  }, [charIndex, deleting, currentLine, lineIndex]);
+
+  return (
+    <>
+      <span className="text-[#f5f5f7]">
+        {currentLine.slice(0, charIndex)}
+      </span>
+
+      <span
+        className="ml-1 inline-block h-[0.9em] w-[3px] translate-y-[0.08em] bg-[#a78bfa] align-middle"
+        style={{
+          animation: 'cursorBlink 0.8s steps(1) infinite',
+        }}
+      />
+
+      <style>{`
+        @keyframes cursorBlink {
+          0%, 45% {
+            opacity: 1;
+          }
+
+          46%, 100% {
+            opacity: 0;
+          }
+        }
+      `}</style>
+    </>
+  );
+}
 
 export default function Dashboard() {
   const { isAuthenticated } = useAuth();
@@ -116,6 +181,15 @@ export default function Dashboard() {
     );
   }
 
+  if (selectedReview) {
+  return (
+    <ReviewDetail
+      review={selectedReview}
+      onBack={() => setSelectedReview(null)}
+    />
+  );
+}
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050507] text-[#e6e7eb]">
 
@@ -148,7 +222,7 @@ export default function Dashboard() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 border-b border-white/[0.07]">
+      <header className="sticky top-0 z-50 border-b border-white/[0.07] bg-[#050507]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5 lg:px-8">
 
           <div className="font-mono text-sm uppercase tracking-[0.35em] text-[#a78bfa]">
@@ -166,18 +240,10 @@ export default function Dashboard() {
 
         {/* Hero */}
         <section className="mb-16">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-[#8b5cf6]">
-            Dashboard
-          </p>
-
-          <h1 className="mt-5 max-w-3xl text-5xl font-medium leading-[1.03] tracking-[-0.05em] text-[#f5f5f7] sm:text-6xl">
-            Your code.
-            <br />
-            <span className="text-[#777982]">
-              Reviewed automatically.
-            </span>
-          </h1>
-        </section>
+  <h1 className="max-w-3xl text-5xl font-medium leading-[1.03] tracking-[-0.05em] text-[#f5f5f7] sm:text-6xl">
+    <TypewriterText />
+  </h1>
+</section>
 
         {error && (
           <div className="mb-10 rounded-xl border border-red-400/20 bg-red-400/[0.06] px-5 py-4 text-sm text-red-400">
@@ -241,7 +307,10 @@ export default function Dashboard() {
             {loading ? (
               <SkeletonList rows={5} />
             ) : (
-              <ReviewHistory reviews={reviews} />
+              <ReviewHistory
+  reviews={reviews}
+  onReviewClick={setSelectedReview}
+/>
             )}
           </section>
 
