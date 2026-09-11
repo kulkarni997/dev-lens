@@ -1,3 +1,5 @@
+import ReactMarkdown from 'react-markdown';
+
 function timeAgo(dateStr) {
   const diffMs = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diffMs / 60000);
@@ -95,9 +97,59 @@ export default function ReviewDetail({ review, onBack }) {
           </div>
 
           <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-6 backdrop-blur-sm sm:p-8">
-            <div className="whitespace-pre-wrap font-mono text-sm leading-7 text-[#b8bac2]">
-              {review.reviewText}
-            </div>
+            <div className="font-mono text-sm leading-7 text-[#b8bac2]">
+  <ReactMarkdown
+    components={{
+      h1: ({ children }) => (
+        <h1 className="mb-4 mt-8 text-xl font-medium text-white first:mt-0">
+          {children}
+        </h1>
+      ),
+      h2: ({ children }) => (
+        <h2 className="mb-3 mt-7 text-lg font-medium text-white">
+          {children}
+        </h2>
+      ),
+      h3: ({ children }) => (
+        <h3 className="mb-2 mt-6 text-base font-medium text-white">
+          {children}
+        </h3>
+      ),
+      p: ({ children }) => (
+        <p className="mb-4 last:mb-0">
+          {children}
+        </p>
+      ),
+      ul: ({ children }) => (
+        <ul className="mb-4 list-disc space-y-2 pl-5">
+          {children}
+        </ul>
+      ),
+      ol: ({ children }) => (
+        <ol className="mb-4 list-decimal space-y-2 pl-5">
+          {children}
+        </ol>
+      ),
+      li: ({ children }) => (
+        <li className="pl-1">
+          {children}
+        </li>
+      ),
+      code: ({ children }) => (
+        <code className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[#c4b5fd]">
+          {children}
+        </code>
+      ),
+      strong: ({ children }) => (
+        <strong className="font-medium text-[#f4f4f5]">
+          {children}
+        </strong>
+      ),
+    }}
+  >
+    {review.reviewText}
+  </ReactMarkdown>
+</div>
           </div>
         </section>
 
