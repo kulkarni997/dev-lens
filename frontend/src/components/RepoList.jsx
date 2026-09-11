@@ -8,6 +8,7 @@ export default function RepoList({ repos, onRepoConnected }) {
   async function handleConnect(repo) {
     setConnectingId(repo.full_name);
     setFailedId(null);
+
     try {
       await connectRepo(repo.owner, repo.name);
       onRepoConnected?.(repo.full_name);
@@ -21,35 +22,56 @@ export default function RepoList({ repos, onRepoConnected }) {
 
   if (repos.length === 0) {
     return (
-      <div className="rounded-md border border-dashed border-[#232838] p-6 text-center text-sm text-[#8B93A7]">
+      <div className="rounded-xl border border-dashed border-white/[0.1] px-6 py-10 text-center text-sm leading-6 text-[#71717a]">
         No repos found. Make sure DevLens has access to your GitHub account.
       </div>
     );
   }
 
   return (
-    <ul className="divide-y divide-[#232838]">
+    <ul className="divide-y divide-white/[0.07]">
       {repos.map((repo) => (
-        <li key={repo.full_name} className="flex items-center justify-between gap-3 py-3">
+        <li
+          key={repo.full_name}
+          className="group flex items-center justify-between gap-4 py-5"
+        >
           <div className="min-w-0">
-            <div className="truncate font-mono text-sm text-[#E6E9EF]">{repo.full_name}</div>
-            {repo.private && <span className="text-xs text-[#8B93A7]">private</span>}
-            {failedId === repo.full_name && (
-              <div className="text-xs text-[#F85149]">Couldn't connect — try again</div>
-            )}
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#71717a] transition-colors group-hover:bg-[#a78bfa]" />
+
+              <div className="truncate font-mono text-sm text-[#d4d4d8]">
+                {repo.full_name}
+              </div>
+            </div>
+
+            <div className="mt-1.5 ml-3.5">
+              {repo.private && (
+                <span className="font-mono text-xs text-[#52525b]">
+                  private
+                </span>
+              )}
+
+              {failedId === repo.full_name && (
+                <div className="mt-1 text-xs text-red-400">
+                  Couldn't connect — try again
+                </div>
+              )}
+            </div>
           </div>
 
           {repo.hasWebhook ? (
-            <span className="shrink-0 rounded border border-[#3FB950]/30 bg-[#3FB950]/10 px-2 py-0.5 font-mono text-xs text-[#3FB950]">
+            <span className="shrink-0 font-mono text-xs text-emerald-400">
               connected
             </span>
           ) : (
             <button
               onClick={() => handleConnect(repo)}
               disabled={connectingId === repo.full_name}
-              className="shrink-0 rounded border border-[#A78BFA]/40 px-3 py-1 font-mono text-xs text-[#A78BFA] transition hover:bg-[#A78BFA]/10 disabled:opacity-50"
+              className="shrink-0 rounded-full border border-[#383342] px-4 py-1.5 font-mono text-xs text-[#a78bfa] transition-all duration-300 hover:border-[#a78bfa]/60 hover:bg-[#a78bfa]/[0.07] disabled:cursor-wait disabled:opacity-50"
             >
-              {connectingId === repo.full_name ? 'connecting…' : 'connect'}
+              {connectingId === repo.full_name
+                ? 'connecting…'
+                : 'connect'}
             </button>
           )}
         </li>

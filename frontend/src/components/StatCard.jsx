@@ -1,11 +1,13 @@
-export default function StatCard({ label, value, accent = '#3FB950' }) {
+export default function StatCard({ label, value }) {
   return (
-    <div
-      className="flex-1 rounded-md border border-[#232838] bg-[#12161F] p-4"
-      style={{ borderLeft: `3px solid ${accent}` }}
-    >
-      <div className="font-mono text-2xl font-semibold text-[#E6E9EF]">{value}</div>
-      <div className="mt-1 text-sm text-[#8B93A7]">{label}</div>
+    <div className="group bg-[#0b0c10]/80 px-6 py-7 text-center backdrop-blur-sm transition-colors duration-300 hover:bg-white/[0.035] sm:px-8">
+      <div className="font-mono text-3xl font-medium tracking-tight text-[#f4f4f5] sm:text-4xl">
+        {value}
+      </div>
+
+      <div className="mt-2 font-mono text-xs uppercase tracking-[0.18em] text-[#71717a]">
+        {label}
+      </div>
     </div>
   );
 }

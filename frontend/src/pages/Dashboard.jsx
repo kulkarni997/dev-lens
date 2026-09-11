@@ -1,10 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getRepos } from '../api/repos';
 import { getReviews } from '../api/reviews';
 import { useAuth } from '../hooks/useAuth';
 import StatCard from '../components/StatCard';
 import RepoList from '../components/RepoList';
 import ReviewHistory from '../components/ReviewHistory';
+
+const STAR_COLORS = [
+  '#ffffff',
+  '#c4b5fd',
+  '#a5b4fc',
+  '#93c5fd',
+  '#f9a8d4',
+];
 
 export default function Dashboard() {
   const { isAuthenticated } = useAuth();
@@ -18,23 +26,29 @@ export default function Dashboard() {
       setLoading(false);
       return;
     }
+
     let cancelled = false;
+
     setLoading(true);
+
     Promise.all([getRepos(), getReviews()])
       .then(([repoData, reviewData]) => {
         if (cancelled) return;
+
         setRepos(repoData);
         setReviews(reviewData);
         setError(null);
       })
       .catch((err) => {
         if (cancelled) return;
+
         console.error(err);
         setError("Couldn't load dashboard data. Is the backend running?");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
@@ -42,27 +56,60 @@ export default function Dashboard() {
 
   function handleRepoConnected(fullName) {
     setRepos((prev) =>
-      prev.map((r) => (r.full_name === fullName ? { ...r, hasWebhook: true } : r))
+      prev.map((repo) =>
+        repo.full_name === fullName
+          ? { ...repo, hasWebhook: true }
+          : repo
+      )
     );
   }
 
-  const connectedCount = repos.filter((r) => r.hasWebhook).length;
-  const postedCount = reviews.filter((r) => r.status === 'posted').length;
-  const successRate = reviews.length > 0 ? Math.round((postedCount / reviews.length) * 100) : 0;
+  const connectedCount = repos.filter((repo) => repo.hasWebhook).length;
+  const postedCount = reviews.filter(
+    (review) => review.status === 'posted'
+  ).length;
+
+  const successRate =
+    reviews.length > 0
+      ? Math.round((postedCount / reviews.length) * 100)
+      : 0;
+
+  const stars = useMemo(() => {
+    return Array.from({ length: 45 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      size: Math.random() * 1.5 + 0.5,
+      color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
+      duration: Math.random() * 10 + 8,
+      delay: Math.random() * -15,
+      driftX: (Math.random() - 0.5) * 80,
+      driftY: (Math.random() - 0.5) * 60,
+    }));
+  }, []);
 
   if (!isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0B0E14] px-4">
-        <div className="max-w-sm text-center">
-          <div className="font-mono text-lg text-[#E6E9EF]">Not signed in</div>
-          <p className="mt-2 text-sm text-[#8B93A7]">
-            Sign in with GitHub to see your connected repos and review history.
+      <div className="flex min-h-screen items-center justify-center bg-[#050507] px-4 text-center text-white">
+        <div>
+          <div className="font-mono text-sm uppercase tracking-[0.35em] text-[#a78bfa]">
+            DevLens
+          </div>
+
+          <h1 className="mt-8 text-4xl font-medium tracking-[-0.04em]">
+            Not signed in
+          </h1>
+
+          <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-[#8b8e98]">
+            Sign in with GitHub to see your connected repositories and
+            review history.
           </p>
+
           <a
             href="/login"
-            className="mt-4 inline-block rounded border border-[#A78BFA]/40 px-4 py-2 font-mono text-xs text-[#A78BFA] transition hover:bg-[#A78BFA]/10"
+            className="mt-8 inline-flex rounded-full border border-[#8b5cf6]/50 px-6 py-3 font-mono text-sm text-[#c4b5fd] transition hover:border-[#a78bfa] hover:bg-[#a78bfa]/10"
           >
-            sign in
+            Sign in
           </a>
         </div>
       </div>
@@ -70,60 +117,183 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E14] text-[#E6E9EF]">
-      <header className="border-b border-[#232838] px-6 py-4">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <span className="font-mono text-sm tracking-wide">
-            Dev<span className="text-[#A78BFA]">Lens</span>
-          </span>
-          <span className="font-mono text-xs text-[#8B93A7]">
+    <div className="relative min-h-screen overflow-hidden bg-[#050507] text-[#e6e7eb]">
+
+      {/* Subtle galaxy */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+
+        <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-purple-700/[0.07] blur-[150px]" />
+
+        <div className="absolute -bottom-40 -right-40 h-[550px] w-[550px] rounded-full bg-blue-700/[0.06] blur-[160px]" />
+
+        {stars.map((star) => (
+          <span
+            key={star.id}
+            className="dashboard-star absolute rounded-full"
+            style={{
+              left: `${star.left}%`,
+              top: `${star.top}%`,
+              width: `${star.size}px`,
+              height: `${star.size}px`,
+              backgroundColor: star.color,
+              '--duration': `${star.duration}s`,
+              '--delay': `${star.delay}s`,
+              '--drift-x': `${star.driftX}px`,
+              '--drift-y': `${star.driftY}px`,
+            }}
+          />
+        ))}
+
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(5,5,7,0.94)_0%,rgba(5,5,7,0.82)_60%,rgba(5,5,7,0.55)_100%)]" />
+      </div>
+
+      {/* Header */}
+      <header className="relative z-10 border-b border-white/[0.07]">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5 lg:px-8">
+
+          <div className="font-mono text-sm uppercase tracking-[0.35em] text-[#a78bfa]">
+            DEV<span className="text-[#8b5cf6]">LENS</span>
+          </div>
+
+          <div className="font-mono text-xs text-[#71717a]">
             {repos.length} repo{repos.length === 1 ? '' : 's'} synced
-          </span>
+          </div>
+
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-8">
+      <main className="relative z-10 mx-auto max-w-6xl px-6 py-16 lg:px-8 lg:py-20">
+
+        {/* Hero */}
+        <section className="mb-16">
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-[#8b5cf6]">
+            Dashboard
+          </p>
+
+          <h1 className="mt-5 max-w-3xl text-5xl font-medium leading-[1.03] tracking-[-0.05em] text-[#f5f5f7] sm:text-6xl">
+            Your code.
+            <br />
+            <span className="text-[#777982]">
+              Reviewed automatically.
+            </span>
+          </h1>
+        </section>
+
         {error && (
-          <div className="mb-6 rounded-md border border-[#F85149]/30 bg-[#F85149]/10 px-4 py-3 text-sm text-[#F85149]">
+          <div className="mb-10 rounded-xl border border-red-400/20 bg-red-400/[0.06] px-5 py-4 text-sm text-red-400">
             {error}
           </div>
         )}
 
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row">
-          <StatCard label="repos connected" value={loading ? '—' : connectedCount} accent="#A78BFA" />
-          <StatCard label="reviews posted" value={loading ? '—' : reviews.length} accent="#3FB950" />
-          <StatCard label="success rate" value={loading ? '—' : `${successRate}%`} accent="#6E9FFF" />
-        </div>
+        {/* Stats */}
+        <section className="mb-20 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.08] sm:grid-cols-3">
+          <StatCard
+            label="repos connected"
+            value={loading ? '—' : connectedCount}
+          />
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_2fr]">
+          <StatCard
+            label="reviews posted"
+            value={loading ? '—' : reviews.length}
+          />
+
+          <StatCard
+            label="success rate"
+            value={loading ? '—' : `${successRate}%`}
+          />
+        </section>
+
+        {/* Main content */}
+        <div className="grid grid-cols-1 gap-16 lg:grid-cols-[0.9fr_1.5fr] lg:gap-24">
+
           <section>
-            <h2 className="mb-3 font-mono text-xs uppercase tracking-wider text-[#8B93A7]">
-              Connected repos
-            </h2>
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-[#71717a]">
+                Connected repos
+              </h2>
+
+              <span className="font-mono text-xs text-[#52525b]">
+                {connectedCount}/{repos.length}
+              </span>
+            </div>
+
             {loading ? (
               <SkeletonList />
             ) : (
-              <RepoList repos={repos} onRepoConnected={handleRepoConnected} />
+              <RepoList
+                repos={repos}
+                onRepoConnected={handleRepoConnected}
+              />
             )}
           </section>
 
           <section>
-            <h2 className="mb-3 font-mono text-xs uppercase tracking-wider text-[#8B93A7]">
-              Review history
-            </h2>
-            {loading ? <SkeletonList rows={5} /> : <ReviewHistory reviews={reviews} />}
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-[#71717a]">
+                Review history
+              </h2>
+
+              <span className="font-mono text-xs text-[#52525b]">
+                {reviews.length} total
+              </span>
+            </div>
+
+            {loading ? (
+              <SkeletonList rows={5} />
+            ) : (
+              <ReviewHistory reviews={reviews} />
+            )}
           </section>
+
         </div>
       </main>
+
+      <style>{`
+        .dashboard-star {
+          opacity: 0.25;
+          box-shadow: 0 0 4px currentColor;
+          animation: dashboardDrift var(--duration) ease-in-out var(--delay) infinite alternate;
+        }
+
+        @keyframes dashboardDrift {
+          0% {
+            transform: translate3d(0, 0, 0);
+            opacity: 0.15;
+          }
+
+          50% {
+            transform: translate3d(var(--drift-x), var(--drift-y), 0);
+            opacity: 0.65;
+          }
+
+          100% {
+            transform: translate3d(
+              calc(var(--drift-x) * -0.4),
+              calc(var(--drift-y) * -0.4),
+              0
+            );
+            opacity: 0.2;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .dashboard-star {
+            animation: none;
+          }
+        }
+      `}</style>
     </div>
   );
 }
 
 function SkeletonList({ rows = 3 }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="h-10 animate-pulse rounded bg-[#12161F]" />
+        <div
+          key={i}
+          className="h-16 animate-pulse rounded-xl border border-white/[0.06] bg-white/[0.025]"
+        />
       ))}
     </div>
   );

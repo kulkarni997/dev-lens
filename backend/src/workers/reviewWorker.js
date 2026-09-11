@@ -1,9 +1,21 @@
 const { Worker } = require('bullmq');
 const axios = require('axios');
-const { connection } = require('../queues/reviewQueue');
+const { connection, reviewQueue } = require('../queues/reviewQueue'); // <-- need reviewQueue exported too
 const { getReview, postReviewComment } = require('../services/aiReview');
 const Review = require('../models/Review');
 const { tryConsumeGeminiCall } = require('../services/usageLimiter');
+const { queueDepth } = require('../metrics'); // <-- new import
+
+// Poll queue depth every 5s and update the Gauge
+setInterval(async () => {
+  try {
+    const waiting = await reviewQueue.getWaitingCount();
+    queueDepth.set({ queue_name: 'pr-review' }, waiting);
+  } catch (err) {
+    console.error('Failed to poll queue depth:', err.message);
+  }
+}, 5000);
+
 const reviewWorker = new Worker(
   'pr-review',
   async (job) => {
@@ -25,22 +37,21 @@ const reviewWorker = new Worker(
     console.log('Diff fetched, length:', diffText.length);
 
     const usage = await tryConsumeGeminiCall();
-if (!usage.allowed) {
-  console.warn(`Gemini daily limit reached (${usage.count}/${usage.limit}), skipping PR #${prNumber}`);
-  await Review.create({
-    user: userId,
-    owner,
-    repo,
-    prNumber,
-    prTitle,
-    reviewText: null,
-    aiProvider: 'gemini',
-    status: 'failed',
-    // optional — see note below
-    failureReason: 'daily_limit_reached',
-  });
-  return; // don't call Gemini, don't try to post a comment
-}
+    if (!usage.allowed) {
+      console.warn(`Gemini daily limit reached (${usage.count}/${usage.limit}), skipping PR #${prNumber}`);
+      await Review.create({
+        user: userId,
+        owner,
+        repo,
+        prNumber,
+        prTitle,
+        reviewText: null,
+        aiProvider: 'gemini',
+        status: 'failed',
+        failureReason: 'daily_limit_reached',
+      });
+      return;
+    }
 
     // Step 2: send to Gemini
     const review = await getReview(diffText);

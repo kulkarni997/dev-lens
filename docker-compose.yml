@@ -30,5 +30,17 @@ services:
     ports:
       - "6379:6379"
 
+  alloy:
+    image: grafana/alloy:latest
+    volumes:
+      - ./alloy-config.river:/etc/alloy/config.river
+    command: ["run", "--server.http.listen-addr=0.0.0.0:12345", "/etc/alloy/config.river"]
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - backend
+    ports:
+      - "12345:12345"
+
 volumes:
   mongo_data:

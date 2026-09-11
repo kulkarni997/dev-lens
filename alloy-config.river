@@ -1,0 +1,19 @@
+prometheus.scrape "devlens_backend" {
+  targets = [
+    {"__address__" = "backend:5000"},
+  ]
+  metrics_path = "/metrics"
+  scrape_interval = "15s"
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+prometheus.remote_write "grafana_cloud" {
+  endpoint {
+    url = "https://prometheus-prod-43-prod-ap-south-1.grafana.net/api/prom/push"
+
+    basic_auth {
+      username = env("GRAFANA_CLOUD_USER")
+      password = env("GRAFANA_CLOUD_TOKEN")
+    }
+  }
+}

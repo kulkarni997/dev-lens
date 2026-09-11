@@ -11,17 +11,26 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  * needs to know or care which AI is actually doing the work.
  */
 const { withRetry } = require('../utils/retry');
+const { geminiCallDuration } = require('../metrics');
 
 async function getReview(diffText) {
-  return withRetry(
-    () => getGeminiReview(diffText),
-    {
-      retries: 3,
-      baseDelayMs: 1500,
-      onRetry: (err, attempt, delay) =>
-        console.warn(`Gemini call failed (attempt ${attempt}), retrying in ${Math.round(delay)}ms: ${err.message}`),
-    }
-  );
+  const end = geminiCallDuration.startTimer();
+  try {
+    const result = await withRetry(
+      () => getGeminiReview(diffText),
+      {
+        retries: 3,
+        baseDelayMs: 1500,
+        onRetry: (err, attempt, delay) =>
+          console.warn(`Gemini call failed (attempt ${attempt}), retrying in ${Math.round(delay)}ms: ${err.message}`),
+      }
+    );
+    end({ status: 'success' });
+    return result;
+  } catch (err) {
+    end({ status: 'error' });
+    throw err;
+  }
 }
 
 async function getGeminiReview(diffText) {
