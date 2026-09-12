@@ -6,19 +6,22 @@ export default function RepoList({ repos, onRepoConnected }) {
   const [failedId, setFailedId] = useState(null);
 
   async function handleConnect(repo) {
-    setConnectingId(repo.full_name);
-    setFailedId(null);
+  setConnectingId(repo.full_name);
+  setFailedId(null);
 
-    try {
-      await connectRepo(repo.owner, repo.name);
-      onRepoConnected?.(repo.full_name);
-    } catch (err) {
-      console.error('Failed to connect repo', err);
-      setFailedId(repo.full_name);
-    } finally {
-      setConnectingId(null);
-    }
+  try {
+    const [owner, repoName] = repo.full_name.split('/');
+
+    await connectRepo(owner, repoName);
+
+    onRepoConnected?.(repo.full_name);
+  } catch (err) {
+    console.error('Failed to connect repo', err);
+    setFailedId(repo.full_name);
+  } finally {
+    setConnectingId(null);
   }
+}
 
   if (repos.length === 0) {
     return (

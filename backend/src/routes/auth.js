@@ -49,7 +49,11 @@ router.get('/github/callback', async (req, res) => {
       { upsert: true, returnDocument: 'after' }
     );
 
-    console.log('User saved:', user);
+    console.log("User saved:", {
+  id: user._id,
+  githubId: user.githubId,
+  username: user.username,
+});
 
     // Create the JWT "ID badge" — payload holds just the user's Mongo _id,
     // signed with JWT_SECRET so the server can verify it later without

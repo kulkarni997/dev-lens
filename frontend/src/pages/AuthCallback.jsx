@@ -22,24 +22,55 @@ export default function AuthCallback() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0B0E14] px-4">
-        <div className="max-w-sm text-center">
-          <div className="font-mono text-lg text-[#F85149]">Sign-in failed</div>
-          <p className="mt-2 text-sm text-[#8B93A7]">{error}</p>
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] px-4 text-white">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-purple-700/[0.08] blur-[150px]" />
+          <div className="absolute -bottom-40 -right-40 h-[550px] w-[550px] rounded-full bg-blue-700/[0.06] blur-[160px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(5,5,7,0.9),transparent)]" />
+        </div>
+
+        <main className="relative z-10 max-w-md text-center">
+          <div className="font-mono text-sm uppercase tracking-[0.35em] text-[#a78bfa]">
+            DEV<span className="text-[#8b5cf6]">LENS</span>
+          </div>
+
+          <div className="mt-12 font-mono text-xs uppercase tracking-[0.25em] text-red-400">
+            Sign-in failed
+          </div>
+
+          <p className="mt-4 text-sm leading-6 text-[#8b8e98]">
+            {error}
+          </p>
+
           <a
             href="/login"
-            className="mt-4 inline-block rounded border border-[#A78BFA]/40 px-4 py-2 font-mono text-xs text-[#A78BFA] transition hover:bg-[#A78BFA]/10"
+            className="mt-8 inline-flex rounded-full border border-[#8b5cf6]/60 px-6 py-3 font-mono text-xs text-[#c4b5fd] transition hover:border-[#a78bfa] hover:bg-[#a78bfa]/10"
           >
-            back to sign in
+            ← back to sign in
           </a>
-        </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0B0E14] px-4">
-      <div className="font-mono text-sm text-[#8B93A7]">signing you in…</div>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] px-4 text-white">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-purple-700/[0.08] blur-[150px]" />
+        <div className="absolute -bottom-40 -right-40 h-[550px] w-[550px] rounded-full bg-blue-700/[0.06] blur-[160px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(5,5,7,0.9),transparent)]" />
+      </div>
+
+      <main className="relative z-10 flex flex-col items-center text-center">
+        <div className="font-mono text-2xl font-medium uppercase tracking-[0.45em] text-[#b993ff]">
+          DEV<span className="text-[#8b5cf6]">LENS</span>
+        </div>
+
+        <div className="mt-10 flex items-center gap-3 font-mono text-xs text-[#8b8e98]">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#a78bfa]" />
+          signing you in…
+        </div>
+      </main>
     </div>
   );
 }
