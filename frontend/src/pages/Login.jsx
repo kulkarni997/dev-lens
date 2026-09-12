@@ -298,28 +298,6 @@ export default function Login() {
           }
         }
 
-        @keyframes shootingStar {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) rotate(-28deg) scaleX(0);
-  }
-
-  5% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) rotate(-28deg) scaleX(0.35);
-  }
-
-  18% {
-    opacity: 0;
-    transform: translate3d(180px, 110px, 0) rotate(-28deg) scaleX(1);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate3d(180px, 110px, 0) rotate(-28deg) scaleX(1);
-  }
-}
-
         @media (prefers-reduced-motion: reduce) {
           .galaxy-star,
           .glowing-star,

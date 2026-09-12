@@ -24,7 +24,7 @@ function TypewriterText() {
   const [lineIndex, setLineIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [deleting, setDeleting] = useState(false);
-  const [selectedReview, setSelectedReview] = useState(null);
+  
 
   const currentLine = lines[lineIndex];
 
@@ -85,6 +85,7 @@ export default function Dashboard() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedReview, setSelectedReview] = useState(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -246,10 +247,22 @@ export default function Dashboard() {
 </section>
 
         {error && (
-          <div className="mb-10 rounded-xl border border-red-400/20 bg-red-400/[0.06] px-5 py-4 text-sm text-red-400">
-            {error}
-          </div>
-        )}
+  <div className="mb-10 border-y border-red-400/[0.15] py-5">
+    <div className="flex items-start gap-3">
+      <span className="mt-1 text-[8px] text-red-400">●</span>
+
+      <div>
+        <div className="font-mono text-xs uppercase tracking-[0.2em] text-red-400">
+          Unable to load
+        </div>
+
+        <p className="mt-2 text-sm leading-6 text-[#8b8e98]">
+          {error}
+        </p>
+      </div>
+    </div>
+  </div>
+)}
 
         {/* Stats */}
         <section className="mb-20 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.08] sm:grid-cols-3">
@@ -357,12 +370,19 @@ export default function Dashboard() {
 
 function SkeletonList({ rows = 3 }) {
   return (
-    <div className="space-y-3">
+    <div className="divide-y divide-white/[0.06]">
       {Array.from({ length: rows }).map((_, i) => (
         <div
           key={i}
-          className="h-16 animate-pulse rounded-xl border border-white/[0.06] bg-white/[0.025]"
-        />
+          className="flex items-center justify-between gap-4 py-5"
+        >
+          <div className="min-w-0 flex-1">
+            <div className="h-3 w-40 animate-pulse rounded-full bg-white/[0.07]" />
+            <div className="mt-3 h-2.5 w-20 animate-pulse rounded-full bg-white/[0.04]" />
+          </div>
+
+          <div className="h-3 w-16 animate-pulse rounded-full bg-white/[0.06]" />
+        </div>
       ))}
     </div>
   );

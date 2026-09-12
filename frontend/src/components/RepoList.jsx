@@ -32,9 +32,9 @@ export default function RepoList({ repos, onRepoConnected }) {
     <ul className="divide-y divide-white/[0.07]">
       {repos.map((repo) => (
         <li
-          key={repo.full_name}
-          className="group flex items-center justify-between gap-4 py-5"
-        >
+  key={repo.full_name}
+  className="group -mx-3 flex items-center justify-between gap-4 rounded-xl px-3 py-5 transition-colors duration-300 hover:bg-white/[0.025]"
+>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#71717a] transition-colors group-hover:bg-[#a78bfa]" />
