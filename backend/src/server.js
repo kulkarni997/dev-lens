@@ -22,10 +22,6 @@ app.use(express.json({
   }
 }));
 
-function add(a, b) {
-  return a - b;
-}
-
 app.use((req, res, next) => {
   const end = httpRequestDuration.startTimer();
   res.on('finish', () => {
