@@ -224,24 +224,24 @@ export default function Dashboard() {
 
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-white/[0.07] bg-[#050507]/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5 lg:px-8">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
 
-          <div className="font-mono text-sm uppercase tracking-[0.35em] text-[#a78bfa]">
+          <div className="font-mono text-xs uppercase tracking-[0.25em] text-[#a78bfa] sm:text-sm sm:tracking-[0.35em]">
             DEV<span className="text-[#8b5cf6]">LENS</span>
           </div>
 
-          <div className="font-mono text-xs text-[#71717a]">
+          <div className="text-right font-mono text-[10px] leading-5 text-[#71717a] sm:text-xs">
             {repos.length} repo{repos.length === 1 ? '' : 's'} synced
           </div>
 
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-6xl px-6 py-16 lg:px-8 lg:py-20">
+      <main className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
 
         {/* Hero */}
-        <section className="mb-16">
-  <h1 className="max-w-3xl text-5xl font-medium leading-[1.03] tracking-[-0.05em] text-[#f5f5f7] sm:text-6xl">
+        <section className="mb-12 sm:mb-16">
+  <h1 className="max-w-3xl text-4xl font-medium leading-[1.05] tracking-[-0.05em] text-[#f5f5f7] sm:text-5xl md:text-6xl">
     <TypewriterText />
   </h1>
 </section>
@@ -265,7 +265,7 @@ export default function Dashboard() {
 )}
 
         {/* Stats */}
-        <section className="mb-20 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.08] sm:grid-cols-3">
+        <section className="mb-14 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.08] sm:mb-20 sm:grid-cols-3">
           <StatCard
             label="repos connected"
             value={loading ? '—' : connectedCount}
@@ -283,10 +283,10 @@ export default function Dashboard() {
         </section>
 
         {/* Main content */}
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-[0.9fr_1.5fr] lg:gap-24">
+        <div className="grid grid-cols-1 gap-12 sm:gap-16 lg:grid-cols-[0.9fr_1.5fr] lg:gap-24">
 
           <section>
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-5 flex items-center justify-between gap-3 sm:mb-6">
               <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-[#71717a]">
                 Connected repos
               </h2>
