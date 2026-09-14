@@ -36,7 +36,7 @@ router.post('/:owner/:repo/hooks', requireAuth, validate(connectRepoSchema), asy
       active: true,
       events: ['pull_request'],
       config: {
-        url: `${process.env.NGROK_URL}/webhooks/github`,
+        url: `${process.env.BACKEND_URL}/webhooks/github`,
         content_type: 'json',
         secret: process.env.GITHUB_WEBHOOK_SECRET
       }
