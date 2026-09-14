@@ -2,7 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
-const User = require('../models/User');
+const User = require('../models/user');
 
 // Step 1: redirect user to GitHub's authorize page
 router.get('/github', (req, res) => {
