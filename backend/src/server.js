@@ -10,6 +10,7 @@ const { apiLimiter, authLimiter } = require('./middleware/rateLimiters');
 const { register, httpRequestDuration } = require('./metrics');
 
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
