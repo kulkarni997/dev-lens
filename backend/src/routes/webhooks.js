@@ -1,20 +1,30 @@
 const express = require('express');
 const crypto = require('crypto');
-const User = require('../models/user');
-const router = express.Router();
 const axios = require('axios');
+
+const User = require('../models/user');
 const { reviewQueue } = require('../queues/reviewQueue');
-const { validate } = require('../middleware/validate');
-const { pullRequestWebhookSchema } = require('../schemas/webhookSchemas');
+
+const router = express.Router();
 
 function verifySignature(req) {
   const signature = req.headers['x-hub-signature-256'];
-  const expectedSignature = 'sha256=' + crypto
-    .createHmac('sha256', process.env.GITHUB_WEBHOOK_SECRET)
-    .update(req.rawBody)
-    .digest('hex');
 
-  return signature === expectedSignature;
+  if (!signature || !process.env.GITHUB_WEBHOOK_SECRET || !req.rawBody) {
+    return false;
+  }
+
+  const expectedSignature =
+    'sha256=' +
+    crypto
+      .createHmac('sha256', process.env.GITHUB_WEBHOOK_SECRET)
+      .update(req.rawBody)
+      .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
 }
 
 function verifySignatureMiddleware(req, res, next) {
@@ -22,55 +32,90 @@ function verifySignatureMiddleware(req, res, next) {
     console.log('Signature mismatch — rejecting');
     return res.status(401).send('Invalid signature');
   }
+
   next();
 }
 
-router.post('/github', verifySignatureMiddleware, validate(pullRequestWebhookSchema), async (req, res) => {
-  const { action, pull_request, repository } = req.validated.body;
-  const eventType = req.headers['x-github-event'];
+router.post(
+  '/github',
+  verifySignatureMiddleware,
+  async (req, res) => {
+    try {
+      const eventType = req.headers['x-github-event'];
 
-  if (eventType === 'pull_request' && (action === 'opened' || action === 'synchronize')) {
-    const prNumber = pull_request.number;
-    const prTitle = pull_request.title;
-    const owner = repository.owner.login;
-    const repo = repository.name;
-
-    console.log('PR event:', action);
-    console.log('PR number:', prNumber);
-    console.log('PR title:', prTitle);
-    console.log('Owner:', owner, '| Repo:', repo);
-
-    const user = await User.findOne({ username: owner });
-    if (!user) {
-      console.log('No matching user found for', owner);
-      return res.status(200).send('No matching user');
-    }
-
-    console.log('Found user, access token available');
-
-    const diffResponse = await axios.get(
-      `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
-      {
-        headers: {
-          Authorization: `Bearer ${user.accessToken}`,
-          Accept: 'application/vnd.github.v3.diff'
-        }
+      // Ignore push and other non-PR events.
+      if (eventType !== 'pull_request') {
+        console.log('Ignoring GitHub event:', eventType);
+        return res.status(200).send('Event ignored');
       }
-    );
 
-    await reviewQueue.add('review-pr', {
-      owner,
-      repo,
-      prNumber,
-      prTitle,
-      accessToken: user.accessToken,
-      userId: user._id,
-    });
+      const { action, pull_request, repository } = req.body;
 
-    console.log('Job enqueued for PR', prNumber);
+      if (!pull_request || !repository) {
+        return res.status(400).json({
+          error: 'Invalid pull request webhook payload',
+        });
+      }
+
+      // Only review newly opened or updated PRs.
+      if (action !== 'opened' && action !== 'synchronize') {
+        console.log('Ignoring pull request action:', action);
+        return res.status(200).send('Action ignored');
+      }
+
+      const prNumber = pull_request.number;
+      const prTitle = pull_request.title;
+      const owner = repository.owner.login;
+      const repo = repository.name;
+
+      console.log('PR event:', action);
+      console.log('PR number:', prNumber);
+      console.log('PR title:', prTitle);
+      console.log('Owner:', owner, '| Repo:', repo);
+
+      const user = await User.findOne({ username: owner });
+
+      if (!user) {
+        console.log('No matching user found for', owner);
+        return res.status(200).send('No matching user');
+      }
+
+      console.log('Found user, access token available');
+
+      // Confirm that GitHub can access the PR.
+      await axios.get(
+        `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.accessToken}`,
+            Accept: 'application/vnd.github+json',
+          },
+        }
+      );
+
+      await reviewQueue.add('review-pr', {
+        owner,
+        repo,
+        prNumber,
+        prTitle,
+        accessToken: user.accessToken,
+        userId: user._id,
+      });
+
+      console.log('Job enqueued for PR', prNumber);
+
+      return res.status(200).send('Review queued');
+    } catch (error) {
+      console.error(
+        'Webhook processing error:',
+        error.response?.data || error.message
+      );
+
+      return res.status(500).json({
+        error: 'Webhook processing failed',
+      });
+    }
   }
-
-  res.status(200).send('Received');
-});
+);
 
 module.exports = router;
